@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>复古街机游戏厅</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .header {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            color: #00ff41;
+            text-shadow: 0 0 20px #00ff41;
+            margin-bottom: 0.5rem;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #00ff41; }
+            to { text-shadow: 0 0 30px #00ff41, 0 0 40px #00ff41; }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #ffff00;
+            margin-bottom: 1rem;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .game-card {
+            background: rgba(0,0,0,0.7);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px);
+            border-color: #00ff41;
+            box-shadow: 0 20px 40px rgba(0,255,65,0.3);
+        }
+
+        .game-title {
+            font-size: 1.5rem;
+            color: #00ff41;
+            margin-bottom: 1rem;
+        }
+
+        .game-description {
+            color: #ccc;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .play-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .play-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(255,107,107,0.4);
+        }
+
+        .game-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .game-screen {
+            background: #000;
+            border: 5px solid #333;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: -50px;
+            right: 0;
+            background: #ff4757;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-width: 200px;
+            margin: 10px auto;
+        }
+
+        .control-btn {
+            background: #2c3e50;
+            border: 2px solid #34495e;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover, .control-btn:active {
+            background: #3498db;
+            border-color: #2980b9;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .action-btn {
+            background: #e74c3c;
+            border: 2px solid #c0392b;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover, .action-btn:active {
+            background: #c0392b;
+            transform: scale(0.95);
+        }
+
+        canvas {
+            border: 2px solid #444;
+            background: #111;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🕹️ 复古街机游戏厅</h1>
+        <p class="subtitle">重温经典，畅玩怀旧街机游戏</p>
+    </div>
+
+    <div class="games-grid">
+        <div class="game-card" onclick="startGame('snake')">
+            <div class="game-title">🐍 贪吃蛇</div>
+            <div class="game-description">经典的贪吃蛇游戏，吃食物让蛇变长，小心不要撞到自己！</div>
+            <button class="play-btn">开始游戏</button>
+        </div>
+
+        <div class="game-card" onclick="startGame('tetris')">
+            <div class="game-title">🧩 俄罗斯方块</div>
+            <div class="game-description">排列下落的方块，消除完整的行来获得分数！</div>
+            <button class="play-btn">开始游戏</button>
+        </div>
+
+        <div class="game-card" onclick="startGame('pong')">
+            <div class="game-title">🏓 Pong</div>
+            <div class="game-description">最早的街机游戏之一，控制挡板不让球落下！</div>
+            <button class="play-btn">开始游戏</button>
+        </div>
+
+        <div class="game-card" onclick="startGame('breakout')">
+            <div class="game-title">🧱 打砖块</div>
+            <div class="game-description">用球和挡板破坏所有砖块，经典的街机游戏！</div>
+            <button class="play-btn">开始游戏</button>
+        </div>
+    </div>
+
+    <div class="game-container" id="gameContainer">
+        <div class="game-screen">
+            <button class="close-btn" onclick="closeGame()">关闭游戏</button>
+            <canvas id="gameCanvas" width="400" height="400"></canvas>
+        </div>
+        <div class="controls">
+            <p>游戏控制</p>
+            <div class="controls-grid">
+                <div></div>
+                <div class="control-btn" data-key="ArrowUp">↑</div>
+                <div></div>
+                <div class="control-btn" data-key="ArrowLeft">←</div>
+                <div class="control-btn" data-key="ArrowDown">↓</div>
+                <div class="control-btn" data-key="ArrowRight">→</div>
+            </div>
+            <div class="action-btns">
+                <div class="action-btn" data-key="Space">开始</div>
+                <div class="action-btn" data-key="KeyR">重置</div>
+            </div>
+            <p style="margin-top: 15px; font-size: 0.9rem; color: #aaa;">
+                键盘控制：方向键移动，空格键开始，R键重置
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let currentGame = null;
+        let gameLoop = null;
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 游戏基类
+        class Game {
+            constructor() {
+                this.score = 0;
+                this.gameOver = false;
+                this.paused = false;
+            }
+
+            start() {
+                this.init();
+                this.gameLoop();
+            }
+
+            init() {}
+
+            update() {}
+
+            draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+
+            gameLoop() {
+                if (!this.gameOver && !this.paused) {
+                    this.update();
+                    this.draw();
+                }
+                gameLoop = requestAnimationFrame(() => this.gameLoop());
+            }
+
+            stop() {
+                if (gameLoop) {
+                    cancelAnimationFrame(gameLoop);
+                }
+            }
+        }
+
+        // 贪吃蛇游戏
+        class SnakeGame extends Game {
+            init() {
+                this.snake = [{x: 200, y: 200}];
+                this.direction = {x: 20, y: 0};
+                this.food = this.generateFood();
+                this.score = 0;
+                this.gameOver = false;
+            }
+
+            generateFood() {
+                return {
+                    x: Math.floor(Math.random() * 20) * 20,
+                    y: Math.floor(Math.random() * 20) * 20
+                };
+            }
+
+            update() {
+                const head = {
+                    x: this.snake[0].x + this.direction.x,
+                    y: this.snake[0].y + this.direction.y
+                };
+
+                // 检查边界碰撞
+                if (head.x < 0 || head.x >= 400 || head.y < 0 || head.y >= 400) {
+                    this.gameOver = true;
+                    return;
+                }
+
+                // 检查自身碰撞
+                for (let segment of this.snake) {
+                    if (head.x === segment.x && head.y === segment.y) {
+                        this.gameOver = true;
+                        return;
+                    }
+                }
+
+                this.snake.unshift(head);
+
+                // 检查食物碰撞
+                if (head.x === this.food.x && head.y === this.food.y) {
+                    this.score += 10;
+                    this.food = this.generateFood();
+                } else {
+                    this.snake.pop();
+                }
+            }
+
+            draw() {
+                super.draw();
+
+                // 绘制蛇
+                ctx.fillStyle = '#00ff41';
+                for (let segment of this.snake) {
+                    ctx.fillRect(segment.x, segment.y, 18, 18);
+                }
+
+                // 绘制食物
+                ctx.fillStyle = '#ff0000';
+                ctx.fillRect(this.food.x, this.food.y, 18, 18);
+
+                // 绘制分数
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '24px Courier New';
+                ctx.fillText(`分数: ${this.score}`, 10, 30);
+
+                if (this.gameOver) {
+                    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                    ctx.fillRect(0, 0, 400, 400);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '32px Courier New';
+                    ctx.fillText('游戏结束!', 120, 180);
+                    ctx.fillText(`最终分数: ${this.score}`, 80, 220);
+                    ctx.font = '16px Courier New';
+                    ctx.fillText('按空格键重新开始', 110, 260);
+                }
+            }
+
+            changeDirection(newDirection) {
+                if (!this.gameOver && 
+                    (newDirection.x === 0 || this.direction.x === 0) && 
+                    (newDirection.y === 0 || this.direction.y === 0)) {
+                    this.direction = newDirection;
+                }
+            }
+        }
+
+        // Pong游戏
+        class PongGame extends Game {
+            init() {
+                this.paddle = {x: 175, y: 350, width: 50, height: 10, speed: 8};
+                this.ball = {x: 200, y: 200, dx: 4, dy: 4, radius: 8};
+                this.score = 0;
+                this.gameOver = false;
+            }
+
+            update() {
+                // 移动球
+                this.ball.x += this.ball.dx;
+                this.ball.y += this.ball.dy;
+
+                // 球与墙壁碰撞
+                if (this.ball.x <= this.ball.radius || this.ball.x >= 400 - this.ball.radius) {
+                    this.ball.dx = -this.ball.dx;
+                }
+                if (this.ball.y <= this.ball.radius) {
+                    this.ball.dy = -this.ball.dy;
+                }
+
+                // 球与挡板碰撞
+                if (this.ball.y + this.ball.radius >= this.paddle.y &&
+                    this.ball.x >= this.paddle.x &&
+                    this.ball.x <= this.paddle.x + this.paddle.width) {
+                    this.ball.dy = -this.ball.dy;
+                    this.score += 10;
+                }
+
+                // 球落下
+                if (this.ball.y > 400) {
+                    this.gameOver = true;
+                }
+            }
+
+            draw() {
+                super.draw();
+
+                // 绘制挡板
+                ctx.fillStyle = '#00ff41';
+                ctx.fillRect(this.paddle.x, this.paddle.y, this.paddle.width, this.paddle.height);
+
+                // 绘制球
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(this.ball.x, this.ball.y, this.ball.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 绘制分数
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '24px Courier New';
+                ctx.fillText(`分数: ${this.score}`, 10, 30);
+
+                if (this.gameOver) {
+                    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                    ctx.fillRect(0, 0, 400, 400);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '32px Courier New';
+                    ctx.fillText('游戏结束!', 120, 180);
+                    ctx.fillText(`最终分数: ${this.score}`, 80, 220);
+                    ctx.font = '16px Courier New';
+                    ctx.fillText('按空格键重新开始', 110, 260);
+                }
+            }
+
+            movePaddle(direction) {
+                if (direction === 'left' && this.paddle.x > 0) {
+                    this.paddle.x -= this.paddle.speed;
+                }
+                if (direction === 'right' && this.paddle.x < 400 - this.paddle.width) {
+                    this.paddle.x += this.paddle.speed;
+                }
+            }
+        }
+
+        // 键盘控制
+        const keys = {};
+        
+        document.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            handleKeyPress(e.code);
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+
+        function handleKeyPress(key) {
+            if (!currentGame) return;
+
+            if (key === 'Space') {
+                if (currentGame.gameOver) {
+                    currentGame.stop();
+                    startGame(currentGame.constructor.name.replace('Game', '').toLowerCase());
+                }
+                return;
+            }
+
+            if (key === 'KeyR') {
+                currentGame.stop();
+                startGame(currentGame.constructor.name.replace('Game', '').toLowerCase());
+                return;
+            }
+
+            if (currentGame instanceof SnakeGame) {
+                switch(key) {
+                    case 'ArrowUp': currentGame.changeDirection({x: 0, y: -20}); break;
+                    case 'ArrowDown': currentGame.changeDirection({x: 0, y: 20}); break;
+                    case 'ArrowLeft': currentGame.changeDirection({x: -20, y: 0}); break;
+                    case 'ArrowRight': currentGame.changeDirection({x: 20, y: 0}); break;
+                }
+            }
+        }
+
+        // 持续按键检测（用于Pong游戏）
+        function checkContinuousKeys() {
+            if (currentGame instanceof PongGame && !currentGame.gameOver) {
+                if (keys['ArrowLeft']) currentGame.movePaddle('left');
+                if (keys['ArrowRight']) currentGame.movePaddle('right');
+            }
+            requestAnimationFrame(checkContinuousKeys);
+        }
+        checkContinuousKeys();
+
+        // 触摸控制
+        document.querySelectorAll('.control-btn, .action-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const key = btn.getAttribute('data-key');
+                if (key) {
+                    handleKeyPress(key);
+                }
+            });
+        });
+
+        function startGame(gameType) {
+            if (currentGame) {
+                currentGame.stop();
+            }
+
+            canvas.width = 400;
+            canvas.height = 400;
+
+            switch(gameType) {
+                case 'snake':
+                    currentGame = new SnakeGame();
+                    break;
+                case 'pong':
+                    currentGame = new PongGame();
+                    break;
+                case 'tetris':
+                    alert('俄罗斯方块游戏开发中...');
+                    return;
+                case 'breakout':
+                    alert('打砖块游戏开发中...');
+                    return;
+                default:
+                    return;
+            }
+
+            document.getElementById('gameContainer').style.display = 'flex';
+            currentGame.start();
+        }
+
+        function closeGame() {
+            if (currentGame) {
+                currentGame.stop();
+                currentGame = null;
+            }
+            document.getElementById('gameContainer').style.display = 'none';
+        }
+
+        // 添加游戏循环速度控制
+        let lastTime = 0;
+        const gameSpeed = 150; // 毫秒
+
+        function gameLoop() {
+            const currentTime = Date.now();
+            if (currentTime - lastTime > gameSpeed) {
+                if (currentGame && !currentGame.gameOver && !currentGame.paused) {
+                    currentGame.update();
+                    currentGame.draw();
+                }
+                lastTime = currentTime;
+            }
+            requestAnimationFrame(gameLoop);
+        }
+    </script>
+</body>
+</html>
+Add retro arcade games
