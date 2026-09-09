@@ -212,6 +212,41 @@
     </div>
   </div>
 
+  <!-- 安全验证弹窗 Modal -->
+  <div id="auth-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-white/10">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i data-lucide="shield-alert" class="w-5 h-5 text-amber-400"></i>
+          安全身份验证
+        </h3>
+        <button id="close-auth-btn" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <p id="auth-desc" class="text-xs text-slate-300 mb-3">为保护系统配置安全，执行此操作前请输入安全密码：</p>
+      <form id="auth-form" class="space-y-4">
+        <div>
+          <input 
+            type="password" 
+            id="auth-password-input" 
+            required 
+            placeholder="请输入管理员密码" 
+            autocomplete="current-password"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/80 border border-white/10 text-white text-sm focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 placeholder:text-slate-500"
+          >
+          <p id="auth-error" class="text-xs text-rose-400 mt-1.5 hidden flex items-center gap-1">
+            <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> 密码错误，请重新输入！
+          </p>
+        </div>
+        <div class="flex justify-end gap-2 pt-1">
+          <button type="button" id="cancel-auth-btn" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-slate-300 transition-colors">取消</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-xs font-semibold text-white shadow-md shadow-sky-600/20 transition-colors">确认验证</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <input type="file" id="import-file-input" accept=".json" class="hidden">
 
   <!-- 核心逻辑脚本 -->
@@ -538,18 +573,67 @@
       }
     });
 
+    // 密码保护机制
+    const SECURE_PASS = '12345688';
+    let pendingAuthAction = null;
+
+    const authModal = document.getElementById('auth-modal');
+    const authForm = document.getElementById('auth-form');
+    const authInput = document.getElementById('auth-password-input');
+    const authError = document.getElementById('auth-error');
+    const authDesc = document.getElementById('auth-desc');
+
+    function requestAuth(actionName, onAuthenticated) {
+      pendingAuthAction = onAuthenticated;
+      authInput.value = '';
+      authError.classList.add('hidden');
+      authDesc.textContent = `为保证安全，在执行【${actionName}】前请输入管理密码：`;
+      authModal.classList.remove('hidden');
+      setTimeout(() => authInput.focus(), 100);
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeAuthModal() {
+      authModal.classList.add('hidden');
+      pendingAuthAction = null;
+      authInput.value = '';
+      authError.classList.add('hidden');
+    }
+
+    document.getElementById('close-auth-btn').addEventListener('click', closeAuthModal);
+    document.getElementById('cancel-auth-btn').addEventListener('click', closeAuthModal);
+
+    authForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (authInput.value.trim() === SECURE_PASS) {
+        const action = pendingAuthAction;
+        closeAuthModal();
+        if (typeof action === 'function') {
+          action();
+        }
+      } else {
+        authError.classList.remove('hidden');
+        authInput.select();
+        if (window.lucide) lucide.createIcons();
+      }
+    });
+
     document.getElementById('export-config-btn').addEventListener('click', () => {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(navData, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `bithou_nav_backup_${new Date().toISOString().slice(0,10)}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
+      requestAuth('备份配置', () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(navData, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `hou_open_backup_${new Date().toISOString().slice(0,10)}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+      });
     });
 
     document.getElementById('import-config-btn').addEventListener('click', () => {
-      document.getElementById('import-file-input').click();
+      requestAuth('导入配置', () => {
+        document.getElementById('import-file-input').click();
+      });
     });
 
     document.getElementById('import-file-input').addEventListener('change', (e) => {
@@ -570,6 +654,8 @@
         }
       };
       reader.readAsText(file);
+      // 清空 input 确保同一个文件再次选择能触发 change
+      e.target.value = '';
     });
 
     renderNav();
