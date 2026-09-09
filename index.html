@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bithou | 极客数字看板</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              500: '#0284c7',
+              600: '#0369a1',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
+    
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .glass {
+      background: rgba(18, 24, 38, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-card {
+      background: rgba(22, 30, 49, 0.55);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-card:hover {
+      background: rgba(30, 41, 67, 0.75);
+      border-color: rgba(56, 189, 248, 0.35);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px -10px rgba(2, 132, 199, 0.25);
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  </style>
+</head>
+<body class="bg-[#0b0f19] text-slate-100 min-h-screen relative overflow-x-hidden selection:bg-sky-500 selection:text-white">
+
+  <!-- 背景光晕动态渐变 -->
+  <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+    <div class="absolute -top-[20%] -left-[10%] w-[600px] h-[600px] rounded-full bg-blue-600/15 blur-[120px]"></div>
+    <div class="absolute top-[30%] -right-[15%] w-[700px] h-[700px] rounded-full bg-purple-600/15 blur-[140px]"></div>
+    <div class="absolute -bottom-[20%] left-[20%] w-[600px] h-[600px] rounded-full bg-cyan-600/15 blur-[120px]"></div>
+  </div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col min-h-screen">
+    
+    <!-- 顶栏：问候与时间 -->
+    <header class="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
+          <i data-lucide="compass" class="w-6 h-6 text-white"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            Bithou's Hub
+            <span class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              All Systems Operational
+            </span>
+          </h1>
+          <p id="greeting-text" class="text-xs text-slate-400">下午好，极客生活由此开始</p>
+        </div>
+      </div>
+
+      <!-- 数字时钟 -->
+      <div class="glass px-5 py-2.5 rounded-2xl flex items-center gap-4 text-center">
+        <div class="text-left">
+          <div id="clock" class="text-2xl font-bold font-mono text-white tracking-wider">12:00:00</div>
+          <div id="date" class="text-[11px] text-slate-400">2026年9月9日 星期三</div>
+        </div>
+        <button id="add-card-btn" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors border border-white/10" title="添加新书签">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- 聚合搜索栏 -->
+    <section class="mb-10 max-w-2xl mx-auto w-full">
+      <div class="glass rounded-2xl p-2 shadow-2xl shadow-black/40">
+        <!-- 搜索引擎切换 -->
+        <div class="flex items-center gap-1 px-2 pt-1 pb-2 border-b border-white/5 text-xs overflow-x-auto">
+          <button data-engine="google" class="search-tab active px-3 py-1 rounded-lg text-white font-medium bg-white/10 transition-colors whitespace-nowrap">Google</button>
+          <button data-engine="baidu" class="search-tab px-3 py-1 rounded-lg text-slate-400 hover:text-white transition-colors whitespace-nowrap">百度</button>
+          <button data-engine="github" class="search-tab px-3 py-1 rounded-lg text-slate-400 hover:text-white transition-colors whitespace-nowrap">GitHub</button>
+          <button data-engine="douban" class="search-tab px-3 py-1 rounded-lg text-slate-400 hover:text-white transition-colors whitespace-nowrap">豆瓣电影</button>
+          <button data-engine="moontv" class="search-tab px-3 py-1 rounded-lg text-slate-400 hover:text-white transition-colors whitespace-nowrap">MoonTV 直达</button>
+        </div>
+        <!-- 搜索输入框 -->
+        <form id="search-form" class="flex items-center gap-3 px-3 py-2">
+          <i data-lucide="search" class="w-5 h-5 text-slate-400 flex-shrink-0"></i>
+          <input 
+            type="text" 
+            id="search-input" 
+            placeholder="搜索全网，或输入网址... (按 / 键快速聚焦)" 
+            autocomplete="off"
+            class="w-full bg-transparent border-none text-white text-sm focus:outline-none placeholder:text-slate-500 font-sans"
+          >
+          <button type="submit" class="px-4 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold shadow-md shadow-sky-600/20 transition-colors flex-shrink-0">
+            搜索
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- 核心卡片网格区域 -->
+    <main class="space-y-8 flex-grow" id="categories-container">
+      <!-- 动态卡片由 JS 生成渲染 -->
+    </main>
+
+    <!-- 底栏 -->
+    <footer class="mt-16 pt-6 border-t border-white/5 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div>
+        Powered by <span class="text-slate-400 font-medium">Cloudflare Pages</span> · Built for <span class="text-sky-400 font-medium">Bithou</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <button id="export-config-btn" class="hover:text-slate-300 transition-colors flex items-center gap-1">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i> 备份配置
+        </button>
+        <button id="import-config-btn" class="hover:text-slate-300 transition-colors flex items-center gap-1">
+          <i data-lucide="upload" class="w-3.5 h-3.5"></i> 导入配置
+        </button>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- 添加新卡片弹窗 Modal -->
+  <div id="add-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass w-full max-w-md rounded-2xl p-6 shadow-2xl border border-white/10">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i data-lucide="bookmark-plus" class="w-5 h-5 text-sky-400"></i>
+          添加新导航卡片
+        </h3>
+        <button id="close-modal-btn" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <form id="add-card-form" class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">所属分类</label>
+          <select id="card-category" class="w-full px-3 py-2 rounded-xl bg-slate-900/80 border border-white/10 text-white text-xs focus:outline-none focus:border-sky-500">
+            <option value="stream">🎬 影音娱乐 (Streaming)</option>
+            <option value="ops">🖥️ 探针与监控 (Operations)</option>
+            <option value="tools">🛠️ 极客生活工具 (Tools)</option>
+            <option value="cloud">🔐 核心基础设施 (Cloud & Infra)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">网站名称</label>
+          <input type="text" id="card-title" required placeholder="如：我的网盘" class="w-full px-3 py-2 rounded-xl bg-slate-900/80 border border-white/10 text-white text-xs focus:outline-none focus:border-sky-500">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">链接地址 (URL)</label>
+          <input type="url" id="card-url" required placeholder="https://..." class="w-full px-3 py-2 rounded-xl bg-slate-900/80 border border-white/10 text-white text-xs focus:outline-none focus:border-sky-500">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">简介说明</label>
+          <input type="text" id="card-desc" placeholder="简要描述站点用途" class="w-full px-3 py-2 rounded-xl bg-slate-900/80 border border-white/10 text-white text-xs focus:outline-none focus:border-sky-500">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">图标 (Lucide 图标名)</label>
+          <input type="text" id="card-icon" placeholder="如 tv, server, shield, globe" class="w-full px-3 py-2 rounded-xl bg-slate-900/80 border border-white/10 text-white text-xs focus:outline-none focus:border-sky-500">
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" id="cancel-modal-btn" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-slate-300">取消</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-xs font-semibold text-white">添加保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <input type="file" id="import-file-input" accept=".json" class="hidden">
+
+  <!-- 核心逻辑脚本 -->
+  <script>
+    // 默认根据 Bithou 生态专属定制的数据结构
+    const DEFAULT_DATA = [
+      {
+        id: 'stream',
+        title: '流媒体与影音娱乐',
+        icon: 'film',
+        badge: 'Streaming',
+        items: [
+          {
+            name: 'MoonTV',
+            url: 'https://tv.282855.xyz',
+            desc: '全栈现代影视聚合播放站 (Next.js 14)',
+            icon: 'tv',
+            color: 'from-pink-500 to-rose-600',
+            tag: '主用'
+          },
+          {
+            name: 'LibreTV',
+            url: 'https://dy.282855.xyz',
+            desc: '轻量秒开在线视频搜索观看 (Edge Functions)',
+            icon: 'play-square',
+            color: 'from-amber-500 to-orange-600',
+            tag: '备用'
+          },
+          {
+            name: 'YouTube',
+            url: 'https://youtube.com',
+            desc: '全球最大视频分享与流媒体平台',
+            icon: 'youtube',
+            color: 'from-red-500 to-red-700'
+          },
+          {
+            name: '哔哩哔哩',
+            url: 'https://bilibili.com',
+            desc: '国内年轻人的潮流文化娱乐社区',
+            icon: 'video',
+            color: 'from-sky-400 to-blue-500'
+          }
+        ]
+      },
+      {
+        id: 'ops',
+        title: '探针监控与运维中枢',
+        icon: 'server',
+        badge: 'DevOps & Monitor',
+        items: [
+          {
+            name: '服务器探针 (CF-Server-Monitor)',
+            url: 'https://cf-server-monitor.bithou.workers.dev',
+            desc: '基于 Cloudflare 边缘计算的 VPS 状态探针',
+            icon: 'activity',
+            color: 'from-emerald-500 to-teal-600',
+            statusDot: true
+          },
+          {
+            name: 'Uptime 监控 (jiankong)',
+            url: 'https://jiankong-3lp.pages.dev',
+            desc: '全天候站点与端口存活率监控',
+            icon: 'heart-pulse',
+            color: 'from-green-500 to-emerald-700',
+            statusDot: true
+          },
+          {
+            name: 'TernSSH 网页终端',
+            url: 'https://ternssh.bithou.workers.dev',
+            desc: '随时随地通过浏览器安全连接管理 VPS',
+            icon: 'terminal',
+            color: 'from-purple-500 to-indigo-600'
+          },
+          {
+            name: 'NodeWarden',
+            url: 'https://nodewarden.bithou.workers.dev',
+            desc: '节点分流与状态集中管理面板',
+            icon: 'cpu',
+            color: 'from-cyan-500 to-blue-600'
+          },
+          {
+            name: '宝塔面板 (VPS 管理)',
+            url: 'https://bithou.com:8888',
+            desc: '个人 VPS 宝塔控制台 / Docker 容器中心',
+            icon: 'layout-grid',
+            color: 'from-blue-600 to-indigo-800'
+          }
+        ]
+      },
+      {
+        id: 'tools',
+        title: '极客数字工具箱',
+        icon: 'wrench',
+        badge: 'Utilities',
+        items: [
+          {
+            name: '今日热榜 (Xinwen)',
+            url: 'https://xinwen-9yi.pages.dev',
+            desc: '全网热搜聚合资讯 (知乎/微博/V2EX/GitHub)',
+            icon: 'newspaper',
+            color: 'from-red-500 to-orange-500'
+          },
+          {
+            name: 'Telegraph 极速图床',
+            url: 'https://tuchuang-ubs.pages.dev',
+            desc: '不限流量、基于 CF Pages 的免费公共图床',
+            icon: 'image',
+            color: 'from-teal-400 to-emerald-600'
+          },
+          {
+            name: '订阅追踪器 (SubsTracker)',
+            url: 'https://dingyue.bithou.workers.dev',
+            desc: '个人会员订阅与周期性开销记账管理',
+            icon: 'credit-card',
+            color: 'from-violet-500 to-purple-600'
+          },
+          {
+            name: 'AI 提示词优化 (Prompt-Optimizer)',
+            url: 'https://ai-prompt.pages.dev',
+            desc: '结构化扩写与调优大语言模型 Prompt',
+            icon: 'sparkles',
+            color: 'from-amber-400 to-yellow-600'
+          },
+          {
+            name: 'CF ProxyIP 检测工具',
+            url: 'https://proxyip.bithou.workers.dev',
+            desc: 'Cloudflare 优质反代节点与代理连通性测速',
+            icon: 'network',
+            color: 'from-blue-400 to-cyan-600'
+          }
+        ]
+      },
+      {
+        id: 'cloud',
+        title: '核心基础设施与控制台',
+        icon: 'shield-check',
+        badge: 'Core Infrastructure',
+        items: [
+          {
+            name: 'Bitwarden 密码库',
+            url: 'https://bit.dpdns.org',
+            desc: '自托管端到端加密密码管理器 (每日自动更新)',
+            icon: 'shield',
+            color: 'from-blue-500 to-sky-600',
+            tag: '核心'
+          },
+          {
+            name: 'Cloudflare 控制台',
+            url: 'https://dash.cloudflare.com',
+            desc: 'Workers & Pages / DNS / R2 / 域名解析管理',
+            icon: 'cloud',
+            color: 'from-amber-500 to-orange-600'
+          },
+          {
+            name: 'GitHub (bithou)',
+            url: 'https://github.com/bithou',
+            desc: '个人代码仓库、自动化 CI/CD 与开源项目',
+            icon: 'github',
+            color: 'from-slate-600 to-slate-800'
+          }
+        ]
+      }
+    ];
+
+    let navData = JSON.parse(localStorage.getItem('bithou_nav_data')) || DEFAULT_DATA;
+
+    function renderNav() {
+      const container = document.getElementById('categories-container');
+      container.innerHTML = '';
+
+      navData.forEach(cat => {
+        const section = document.createElement('section');
+        section.className = 'space-y-3';
+        section.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="p-1.5 rounded-lg bg-white/5 border border-white/10 text-sky-400">
+                <i data-lucide="${cat.icon || 'folder'}" class="w-4 h-4"></i>
+              </div>
+              <h2 class="text-sm font-bold text-white tracking-wide">${cat.title}</h2>
+            </div>
+            <span class="text-[11px] font-mono text-slate-500 uppercase">${cat.badge || ''}</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+            ${cat.items.map(item => `
+              <a href="${item.url}" target="_blank" rel="noopener noreferrer" 
+                 class="glass-card rounded-xl p-3.5 flex items-start gap-3 group relative overflow-hidden">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr ${item.color || 'from-sky-500 to-indigo-500'} flex items-center justify-center text-white flex-shrink-0 shadow-md shadow-black/20 group-hover:scale-105 transition-transform">
+                  <i data-lucide="${item.icon || 'link'}" class="w-5 h-5"></i>
+                </div>
+                <div class="flex-grow min-w-0">
+                  <div class="flex items-center justify-between gap-1 mb-1">
+                    <h3 class="text-xs font-semibold text-white truncate group-hover:text-sky-300 transition-colors">${item.name}</h3>
+                    ${item.tag ? `<span class="text-[9px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-medium border border-sky-500/30 flex-shrink-0">${item.tag}</span>` : ''}
+                    ${item.statusDot ? `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" title="Online"></span>` : ''}
+                  </div>
+                  <p class="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">${item.desc || item.url}</p>
+                </div>
+              </a>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(section);
+      });
+
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    }
+
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+
+      const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+      document.getElementById('date').textContent = now.toLocaleDateString('zh-CN', options);
+
+      const hour = now.getHours();
+      let greeting = '夜深了，注意休息 🌙';
+      if (hour >= 5 && hour < 12) greeting = '早上好，Bithou ☀️ 保持活力的一天';
+      else if (hour >= 12 && hour < 14) greeting = '中午好，享受午休与美食 ☕';
+      else if (hour >= 14 && hour < 18) greeting = '下午好，Bithou 👨‍💻 高效专注进行时';
+      else if (hour >= 18 && hour < 23) greeting = '晚上好，放松一下看看电影 🎬';
+      document.getElementById('greeting-text').textContent = greeting;
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    let currentEngine = 'google';
+    const ENGINES = {
+      google: q => `https://www.google.com/search?q=${encodeURIComponent(q)}`,
+      baidu: q => `https://www.baidu.com/s?wd=${encodeURIComponent(q)}`,
+      github: q => `https://github.com/search?q=${encodeURIComponent(q)}`,
+      douban: q => `https://search.douban.com/movie/subject_search?search_text=${encodeURIComponent(q)}`,
+      moontv: q => `https://tv.282855.xyz/search?q=${encodeURIComponent(q)}`
+    };
+
+    document.querySelectorAll('.search-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.search-tab').forEach(t => {
+          t.classList.remove('active', 'bg-white/10', 'text-white');
+          t.classList.add('text-slate-400');
+        });
+        tab.classList.add('active', 'bg-white/10', 'text-white');
+        tab.classList.remove('text-slate-400');
+        currentEngine = tab.dataset.engine;
+        document.getElementById('search-input').focus();
+      });
+    });
+
+    document.getElementById('search-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const query = document.getElementById('search-input').value.trim();
+      if (!query) return;
+
+      if (query.match(/^https?:\/\//i) || query.match(/^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/)) {
+        const url = query.startsWith('http') ? query : `https://${query}`;
+        window.open(url, '_blank');
+        return;
+      }
+
+      const targetUrl = ENGINES[currentEngine](query);
+      window.open(targetUrl, '_blank');
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement.tagName !== 'INPUT') {
+        e.preventDefault();
+        document.getElementById('search-input').focus();
+      }
+    });
+
+    const modal = document.getElementById('add-modal');
+    document.getElementById('add-card-btn').addEventListener('click', () => modal.classList.remove('hidden'));
+    document.getElementById('close-modal-btn').addEventListener('click', () => modal.classList.add('hidden'));
+    document.getElementById('cancel-modal-btn').addEventListener('click', () => modal.classList.add('hidden'));
+
+    document.getElementById('add-card-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const catId = document.getElementById('card-category').value;
+      const title = document.getElementById('card-title').value.trim();
+      const url = document.getElementById('card-url').value.trim();
+      const desc = document.getElementById('card-desc').value.trim();
+      const icon = document.getElementById('card-icon').value.trim() || 'globe';
+
+      const cat = navData.find(c => c.id === catId);
+      if (cat) {
+        cat.items.push({
+          name: title,
+          url: url,
+          desc: desc,
+          icon: icon,
+          color: 'from-blue-500 to-indigo-600'
+        });
+        localStorage.setItem('bithou_nav_data', JSON.stringify(navData));
+        renderNav();
+        modal.classList.add('hidden');
+        document.getElementById('add-card-form').reset();
+      }
+    });
+
+    document.getElementById('export-config-btn').addEventListener('click', () => {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(navData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `bithou_nav_backup_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    });
+
+    document.getElementById('import-config-btn').addEventListener('click', () => {
+      document.getElementById('import-file-input').click();
+    });
+
+    document.getElementById('import-file-input').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const imported = JSON.parse(event.target.result);
+          if (Array.isArray(imported)) {
+            navData = imported;
+            localStorage.setItem('bithou_nav_data', JSON.stringify(navData));
+            renderNav();
+            alert('导航配置已成功导入！');
+          }
+        } catch (err) {
+          alert('导入失败，JSON 格式无效！');
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    renderNav();
+  </script>
+</body>
+</html>
