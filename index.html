@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bithou | 极客数字看板</title>
+  <title>Hou Open | 极客数字看板</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -94,7 +94,7 @@
         </div>
         <div>
           <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            Bithou's Hub
+            Hou Open
             <span class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
               All Systems Operational
@@ -182,10 +182,10 @@
         <div>
           <label class="block text-xs font-medium text-slate-300 mb-1">所属分类</label>
           <select id="card-category" class="w-full px-3 py-2 rounded-xl bg-slate-900/80 border border-white/10 text-white text-xs focus:outline-none focus:border-sky-500">
-            <option value="stream">🎬 影音娱乐 (Streaming)</option>
-            <option value="ops">🖥️ 探针与监控 (Operations)</option>
-            <option value="tools">🛠️ 极客生活工具 (Tools)</option>
-            <option value="cloud">🔐 核心基础设施 (Cloud & Infra)</option>
+            <option value="stream">🎬 流媒体与影音娱乐 (Streaming)</option>
+            <option value="ops">🖥️ 监控与运维 (Operations)</option>
+            <option value="tools">🛠️ 数字工具箱 (Tools)</option>
+            <option value="cloud">🔐 基础设施与平台 (Cloud & Infra)</option>
           </select>
         </div>
         <div>
@@ -258,36 +258,44 @@
       },
       {
         id: 'ops',
-        title: '探针监控与运维中枢',
+        title: '监控与运维',
         icon: 'server',
         badge: 'DevOps & Monitor',
         items: [
           {
-            name: '服务器探针 (CF-Server-Monitor)',
-            url: 'https://cf-server-monitor.bithou.workers.dev',
+            name: '服务器-监控系统',
+            url: 'https://fwq.282855.xyz/',
             desc: '基于 Cloudflare 边缘计算的 VPS 状态探针',
             icon: 'activity',
             color: 'from-emerald-500 to-teal-600',
             statusDot: true
           },
           {
-            name: 'Uptime 监控 (jiankong)',
-            url: 'https://jiankong-3lp.pages.dev',
+            name: '网站监控(UPtime)',
+            url: 'https://kj.282855.xyz',
             desc: '全天候站点与端口存活率监控',
             icon: 'heart-pulse',
             color: 'from-green-500 to-emerald-700',
             statusDot: true
+          },
+          {
+            name: '宝塔面板 (VPS 管理)',
+            url: 'https://bt.282855.xyz:21355/bithou',
+            desc: '个人 VPS 宝塔控制台 / Docker 容器中心',
+            icon: 'layout-grid',
+            color: 'from-blue-600 to-indigo-800',
+            tag: 'VPS'
           }
         ]
       },
       {
         id: 'tools',
-        title: '极客数字工具箱',
+        title: '数字工具箱',
         icon: 'wrench',
         badge: 'Utilities',
         items: [
           {
-            name: 'IT-Tools 瑞士军刀',
+            name: 'IT-Tools 工具箱',
             url: 'https://tool.282855.xyz',
             desc: '100+ 款极客与开发者全能在线工具箱 (PWA离线可用)',
             icon: 'wrench',
@@ -304,7 +312,7 @@
           },
           {
             name: '今日热榜 (Xinwen)',
-            url: 'https://xinwen-9yi.pages.dev',
+            url: 'https://xw.282855.xyz/',
             desc: '全网热搜聚合资讯 (知乎/微博/V2EX/GitHub)',
             icon: 'newspaper',
             color: 'from-red-500 to-orange-500'
@@ -318,14 +326,14 @@
             tag: '永久R2'
           },
           {
-            name: '订阅追踪器 (SubsTracker)',
-            url: 'https://dingyue.bithou.workers.dev',
+            name: '订阅管理系统',
+            url: 'https://ding.282855.xyz',
             desc: '个人会员订阅与周期性开销记账管理',
             icon: 'credit-card',
             color: 'from-violet-500 to-purple-600'
           },
           {
-            name: 'Bithou AI 边缘工作站',
+            name: 'Bithou AI 聊天站',
             url: 'https://ai.282855.xyz',
             desc: '免费 Cloudflare Workers AI + 多模型中转聚合对话',
             icon: 'bot',
@@ -333,7 +341,7 @@
             tag: 'AI对话'
           },
           {
-            name: 'Bithou Draw 边缘生图工坊',
+            name: 'Bithou AI 绘画站',
             url: 'https://draw.282855.xyz',
             desc: 'FLUX.1 & SDXL 免费边缘绘画 + R2 永久图库直连',
             icon: 'palette',
@@ -352,9 +360,9 @@
       },
       {
         id: 'cloud',
-        title: '核心基础设施与控制台',
+        title: '基础设施与平台',
         icon: 'shield-check',
-        badge: 'Core Infrastructure',
+        badge: 'Infrastructure & Platforms',
         items: [
           {
             name: 'Bitwarden 密码库',
@@ -377,18 +385,16 @@
             desc: '个人代码仓库、自动化 CI/CD 与开源项目',
             icon: 'github',
             color: 'from-slate-600 to-slate-800'
-          },
-          {
-            name: '宝塔面板 (VPS 管理)',
-            url: 'https://bt.282855.xyz:21355/bithou',
-            desc: '个人 VPS 宝塔控制台 / Docker 容器中心',
-            icon: 'layout-grid',
-            color: 'from-blue-600 to-indigo-800',
-            tag: 'VPS'
           }
         ]
       }
     ];
+
+    const DATA_VERSION = 'v20260909_2';
+    if (localStorage.getItem('bithou_nav_version') !== DATA_VERSION) {
+      localStorage.setItem('bithou_nav_data', JSON.stringify(DEFAULT_DATA));
+      localStorage.setItem('bithou_nav_version', DATA_VERSION);
+    }
 
     let navData = JSON.parse(localStorage.getItem('bithou_nav_data')) || DEFAULT_DATA;
 
