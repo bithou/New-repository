@@ -399,6 +399,14 @@
             tag: 'AI绘画'
           },
           {
+            name: 'IP 查询与网络诊断',
+            url: 'https://ip.282855.xyz/',
+            desc: 'IP 归属地查询、网站分流、WebRTC 检测与网络测速诊断',
+            icon: 'map-pin',
+            color: 'from-cyan-500 to-blue-600',
+            tag: 'IP工具'
+          },
+          {
             name: '节点与 ProxyIP 管理',
             url: 'https://jiedian.282855.xyz',
             desc: '节点订阅分流、UUID 连接与 Cloudflare 优质反代管理',
@@ -440,8 +448,31 @@
       }
     ];
 
-    const DATA_VERSION = 'v20260909_2';
+    const DATA_VERSION = 'v20261002_1';
     if (localStorage.getItem('bithou_nav_version') !== DATA_VERSION) {
+      const existingStr = localStorage.getItem('bithou_nav_data');
+      if (existingStr) {
+        try {
+          const oldData = JSON.parse(existingStr);
+          const defaultUrls = new Set();
+          DEFAULT_DATA.forEach(cat => cat.items.forEach(item => defaultUrls.add(item.url.replace(/\/$/, ''))));
+
+          oldData.forEach(oldCat => {
+            const targetCat = DEFAULT_DATA.find(c => c.id === oldCat.id);
+            if (targetCat) {
+              oldCat.items.forEach(oldItem => {
+                const normUrl = (oldItem.url || '').replace(/\/$/, '');
+                if (normUrl && !defaultUrls.has(normUrl)) {
+                  targetCat.items.push(oldItem);
+                  defaultUrls.add(normUrl);
+                }
+              });
+            }
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      }
       localStorage.setItem('bithou_nav_data', JSON.stringify(DEFAULT_DATA));
       localStorage.setItem('bithou_nav_version', DATA_VERSION);
     }
